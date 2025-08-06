@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Timestamp Overlay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#1e40af',
+                        dark: '#0f172a'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+        }
+        
+        .image-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .timestamp-overlay {
+            position: absolute;
+            bottom: 15px;
+            right: 15px; /* dari left ke right */
+            left: auto;
+            background: none;
+            color: #fff;
+            padding: 0;
+            border-radius: 0;
+            font-size: 1rem; /* kecil */
+            font-weight: 500;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+            box-shadow: none;
+            backdrop-filter: none;
+            max-width: 90%;
+            text-align: right;
+            line-height: 1.4;
+        }
+        
+        .preview-container {
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .file-input-label {
+            transition: all 0.3s ease;
+        }
+        
+        .file-input-label:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #1e40af;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+    </style>
+</head>
+<body class="text-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white">Photo Timestamp Overlay</h1>
+            <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">
+                Add location and time information to your photos with a stylish overlay
+            </p>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Panel - Controls -->
+            <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white border-opacity-20">
+                <h2 class="text-2xl font-bold mb-6 text-white flex items-center">
+                    <i class="fas fa-sliders-h mr-3"></i> Configuration
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- File Upload -->
+                    <div>
+                        <label class="block text-lg font-medium mb-3 text-blue-100">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i> Upload Photo
+                        </label>
+                        <div class="flex items-center">
+                            <input type="file" id="photoInput" accept="image/*" class="hidden" multiple>
+                            <label for="photoInput" class="file-input-label flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg cursor-pointer text-center font-medium">
+                                <i class="fas fa-image mr-2"></i> Choose Image
+                            </label>
+                        </div>
+                        <p class="mt-2 text-sm text-blue-200">Supports JPG, PNG, WEBP (Max 5MB)</p>
+                    </div>
+                    
+                    <!-- Location Input -->
+                    <div>
+                        <label for="locationInput" class="block text-lg font-medium mb-3 text-blue-100">
+                            <i class="fas fa-map-marker-alt mr-2"></i> Location
+                        </label>
+                        <input type="text" id="locationInput" placeholder="Enter location (e.g. Paris, France)" 
+                               class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    
+                    <!-- Date/Time Input -->
+                    <div>
+                        <label class="block text-lg font-medium mb-3 text-blue-100">
+                            <i class="far fa-calendar-alt mr-2"></i> Date & Time
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <input type="date" id="dateInput" 
+                                       class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <input type="time" id="timeInput" 
+                                       class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview Button -->
+                    <div class="pt-4">
+                        <button id="previewBtn" class="btn-primary w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-eye mr-2"></i> Preview Timestamp
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Download Section -->
+                <div id="downloadSection" class="mt-10 pt-6 border-t border-white border-opacity-20 hidden">
+                    <h3 class="text-xl font-bold mb-4 text-white flex items-center">
+                        <i class="fas fa-download mr-2"></i> Download Your Photo
+                    </h3>
+                    <p class="text-blue-100 mb-4">Your photo is ready with the timestamp overlay</p>
+                    <button id="downloadBtn" class="btn-secondary w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-save mr-2"></i> Download Modified Photo
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Preview -->
+            <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white border-opacity-20">
+                <h2 class="text-2xl font-bold mb-6 text-white flex items-center">
+                    <i class="fas fa-photo-video mr-3"></i> Preview
+                </h2>
+                
+                <div class="preview-container">
+                    <div id="previewArea" class="relative w-full">
+                        <div id="placeholder" class="text-center p-8 fade-in">
+                            <div class="inline-block p-6 bg-blue-500 bg-opacity-20 rounded-full mb-6 pulse">
+                                <i class="fas fa-camera text-5xl text-blue-300"></i>
+                            </div>
+                            <h3 class="text-2xl font-semibold text-white mb-2">Upload a Photo to Begin</h3>
+                            <p class="text-blue-200 max-w-md mx-auto">Select an image and add timestamp information to see the preview here</p>
+                        </div>
+                        
+                        <div id="imagePreview" class="hidden">
+                            <div class="image-container mx-auto">
+                                <img id="previewImage" src="" alt="Preview" class="max-w-full max-h-[70vh]">
+                                <div id="timestampOverlay" class="timestamp-overlay hidden">
+                                    <div id="timestampText"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 bg-blue-900 bg-opacity-30 rounded-lg p-4">
+                    <h3 class="font-bold text-blue-200 mb-2 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i> How to use
+                    </h3>
+                    <ol class="list-decimal list-inside text-sm text-blue-100 space-y-1">
+                        <li>Upload a photo using the "Choose Image" button</li>
+                        <li>Enter location and select date/time</li>
+                        <li>Click "Preview Timestamp" to see the overlay</li>
+                        <li>Download your modified photo when ready</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-12 text-center text-blue-200 text-sm">
+            <p>© 2023 Photo Timestamp Overlay Tool | All images are processed locally in your browser</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const photoInput = document.getElementById('photoInput');
+            const locationInput = document.getElementById('locationInput');
+            const dateInput = document.getElementById('dateInput');
+            const timeInput = document.getElementById('timeInput');
+            const previewBtn = document.getElementById('previewBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const downloadSection = document.getElementById('downloadSection');
+            const previewImage = document.getElementById('previewImage');
+            const timestampOverlay = document.getElementById('timestampOverlay');
+            const timestampText = document.getElementById('timestampText');
+            const placeholder = document.getElementById('placeholder');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            // Set default date and time to current
+            const now = new Date();
+            const formattedDate = now.toISOString().split('T')[0];
+            const formattedTime = now.toTimeString().substring(0, 5);
+            
+            dateInput.value = formattedDate;
+            timeInput.value = formattedTime;
+            
+            // Handle photo upload
+            photoInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    // Tampilkan preview foto pertama saja
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        previewImage.src = event.target.result;
+                        placeholder.classList.add('hidden');
+                        imagePreview.classList.remove('hidden');
+                        downloadSection.classList.add('hidden');
+                        timestampOverlay.classList.add('hidden');
+                    }
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+            
+            // Preview timestamp
+            previewBtn.addEventListener('click', function() {
+                if (!previewImage.src || previewImage.src === window.location.href) {
+                    alert('Please upload a photo first');
+                    return;
+                }
+
+                // Ambil input, misal: lokasi = "Kec. Sukajadi, Kab. Bandung, Jawa Barat"
+                const location = locationInput.value.trim();
+                const date = dateInput.value;
+                const time = timeInput.value;
+
+                if (!location) {
+                    alert('Please enter a location');
+                    return;
+                }
+
+                if (!date || !time) {
+                    alert('Please select both date and time');
+                    return;
+                }
+
+                // Format tanggal
+                const formattedDate = new Date(date).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Gabungkan semua info jadi satu string
+                const [kecamatan = '', kabupaten = '', provinsi = ''] = location.split(',').map(s => s.trim());
+                const fullText = [formattedDate, kecamatan, kabupaten, provinsi].filter(Boolean).join(', ');
+
+                // Fungsi untuk membagi string jadi maksimal 4 baris, tiap baris max 30 karakter
+                function splitToLines(str, maxLine = 4, maxLen = 30) {
+                    const words = str.split(' ');
+                    const lines = [];
+                    let line = '';
+                    for (let word of words) {
+                        if ((line + ' ' + word).trim().length > maxLen && lines.length < maxLine - 1) {
+                            lines.push(line.trim());
+                            line = word;
+                        } else {
+                            line += ' ' + word;
+                        }
+                    }
+                    if (line) lines.push(line.trim());
+                    // Jika lebih dari 4 baris, gabungkan sisanya ke baris terakhir
+                    if (lines.length > maxLine) {
+                        lines[maxLine - 1] += ' ' + lines.slice(maxLine).join(' ');
+                        return lines.slice(0, maxLine);
+                    }
+                    return lines;
+                }
+
+                const lines = splitToLines(fullText, 4, 30);
+                timestampText.innerText = lines.join('\n');
+                timestampOverlay.classList.remove('hidden');
+                downloadSection.classList.remove('hidden');
+
+                // Scroll to preview
+                document.querySelector('.preview-container').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Download modified photo
+            downloadBtn.addEventListener('click', async function() {
+                if (!photoInput.files || photoInput.files.length === 0) {
+                    alert('Please upload photos and add a timestamp first');
+                    return;
+                }
+
+                const location = locationInput.value.trim();
+                const date = dateInput.value;
+                const time = timeInput.value;
+
+                if (!location || !date || !time) {
+                    alert('Please fill all fields');
+                    return;
+                }
+
+                // Format tanggal
+                const formattedDate = new Date(date).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const [kecamatan = '', kabupaten = '', provinsi = ''] = location.split(',').map(s => s.trim());
+                const fullText = [formattedDate, kecamatan, kabupaten, provinsi].filter(Boolean).join(', ');
+
+                function splitToLines(str, maxLine = 4, maxLen = 30) {
+                    const words = str.split(' ');
+                    const lines = [];
+                    let line = '';
+                    for (let word of words) {
+                        if ((line + ' ' + word).trim().length > maxLen && lines.length < maxLine - 1) {
+                            lines.push(line.trim());
+                            line = word;
+                        } else {
+                            line += ' ' + word;
+                        }
+                    }
+                    if (line) lines.push(line.trim());
+                    if (lines.length > maxLine) {
+                        lines[maxLine - 1] += ' ' + lines.slice(maxLine).join(' ');
+                        return lines.slice(0, maxLine);
+                    }
+                    return lines;
+                }
+                const lines = splitToLines(fullText, 4, 30);
+
+                // Proses semua file
+                for (let i = 0; i < photoInput.files.length; i++) {
+                    const file = photoInput.files[i];
+                    await new Promise((resolve) => {
+                        const img = new Image();
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            img.onload = function() {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                canvas.width = img.naturalWidth;
+                                canvas.height = img.naturalHeight;
+                                ctx.drawImage(img, 0, 0);
+
+                                ctx.font = '500 28px Arial';
+                                ctx.textAlign = 'right';
+                                ctx.textBaseline = 'bottom';
+                                ctx.shadowColor = 'rgba(0,0,0,0.7)';
+                                ctx.shadowBlur = 4;
+                                ctx.shadowOffsetX = 1;
+                                ctx.shadowOffsetY = 1;
+
+                                const padding = 32;
+                                let y = canvas.height - padding - (lines.length - 1) * 34;
+                                ctx.fillStyle = 'white';
+                                for (let j = 0; j < lines.length; j++) {
+                                    ctx.fillText(lines[j], canvas.width - padding, y + j * 34);
+                                }
+
+                                ctx.shadowColor = 'transparent';
+                                ctx.shadowBlur = 0;
+                                ctx.shadowOffsetX = 0;
+                                ctx.shadowOffsetY = 0;
+
+                                // Download otomatis
+                                const link = document.createElement('a');
+                                link.download = `timestamped-${i+1}-${file.name}`;
+                                link.href = canvas.toDataURL('image/png');
+                                link.click();
+                                resolve();
+                            };
+                            img.src = event.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+                alert('Semua foto sudah diproses dan diunduh!');
+            });
+        });
+    </script>
+</body>
+</html>
