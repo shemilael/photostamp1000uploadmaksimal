@@ -171,6 +171,17 @@
                         </div>
                     </div>
                     
+                    <!-- Timestamp Position -->
+                    <div>
+                        <label for="positionSelect" class="block text-lg font-medium mb-3 text-blue-100">
+                            <i class="fas fa-align-left mr-2"></i> Timestamp Position
+                        </label>
+                        <select id="positionSelect" class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="right">Bottom Right</option>
+                            <option value="left">Bottom Left</option>
+                        </select>
+                    </div>
+                    
                     <!-- Preview Button -->
                     <div class="pt-4">
                         <button id="previewBtn" class="btn-primary w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center">
@@ -263,6 +274,7 @@
             const timestampText = document.getElementById('timestampText');
             const placeholder = document.getElementById('placeholder');
             const imagePreview = document.getElementById('imagePreview');
+            const positionSelect = document.getElementById('positionSelect');
             
             // Set default date and time to current
             const now = new Date();
@@ -345,6 +357,16 @@
 
                 const lines = splitToLines(fullText, 4, 30);
                 timestampText.innerText = lines.join('\n');
+                // Atur posisi overlay preview
+                if (positionSelect.value === 'left') {
+                    timestampOverlay.style.right = 'auto';
+                    timestampOverlay.style.left = '15px';
+                    timestampOverlay.style.textAlign = 'left';
+                } else {
+                    timestampOverlay.style.left = 'auto';
+                    timestampOverlay.style.right = '15px';
+                    timestampOverlay.style.textAlign = 'right';
+                }
                 timestampOverlay.classList.remove('hidden');
                 downloadSection.classList.remove('hidden');
 
@@ -397,6 +419,7 @@
                     return lines;
                 }
                 const lines = splitToLines(fullText, 4, 30);
+                const position = positionSelect.value;
 
                 // Proses semua file
                 for (let i = 0; i < photoInput.files.length; i++) {
@@ -413,18 +436,28 @@
                                 ctx.drawImage(img, 0, 0);
 
                                 ctx.font = '500 28px Arial';
-                                ctx.textAlign = 'right';
                                 ctx.textBaseline = 'bottom';
                                 ctx.shadowColor = 'rgba(0,0,0,0.7)';
                                 ctx.shadowBlur = 4;
                                 ctx.shadowOffsetX = 1;
                                 ctx.shadowOffsetY = 1;
+                                ctx.fillStyle = 'white';
 
                                 const padding = 32;
                                 let y = canvas.height - padding - (lines.length - 1) * 34;
-                                ctx.fillStyle = 'white';
+
+                                // Atur posisi kiri/kanan
+                                let x;
+                                if (position === 'left') {
+                                    ctx.textAlign = 'left';
+                                    x = padding;
+                                } else {
+                                    ctx.textAlign = 'right';
+                                    x = canvas.width - padding;
+                                }
+
                                 for (let j = 0; j < lines.length; j++) {
-                                    ctx.fillText(lines[j], canvas.width - padding, y + j * 34);
+                                    ctx.fillText(lines[j], x, y + j * 34);
                                 }
 
                                 ctx.shadowColor = 'transparent';
